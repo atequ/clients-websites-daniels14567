@@ -1,0 +1,11 @@
+.env
+.env.*
+!.env.example
+
+*.csv
+*.xlsx
+*.xls
+
+node_modules/
+.netlify/
+.DS_Store
