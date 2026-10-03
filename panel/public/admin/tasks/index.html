@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="color-scheme" content="dark">
+  <title>Задания</title>
+  <link rel="stylesheet" href="/assets/styles.css">
+</head>
+<body>
+  <header class="bar">
+    <div class="bar-side">
+      <h1>Панель</h1>
+      <nav class="nav">
+        <a href="/admin/">Клиенты</a>
+        <a href="/admin/tasks/" aria-current="page">Задания</a>
+      </nav>
+    </div>
+    <div class="bar-side">
+      <span class="who" id="who"></span>
+      <button id="logout" type="button">Выйти</button>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div id="msg" class="msg error"></div>
+
+    <section class="summary" id="summary" aria-label="Сводка по заданиям"></section>
+
+    <div class="tabs-row" id="status-tabs"></div>
+
+    <div class="toolbar">
+      <input id="search" type="search" placeholder="Поиск по заданию" aria-label="Поиск по заданию">
+      <select id="filter-assignee" aria-label="Фильтр по исполнителю">
+        <option value="">Исполнитель: все</option>
+        <option value="owner">Конор</option>
+        <option value="partner">Даниэль</option>
+        <option value="agent">ИИ-агент</option>
+      </select>
+      <select id="filter-priority" aria-label="Фильтр по приоритету">
+        <option value="">Приоритет: любой</option>
+        <option value="high">Высокий</option>
+        <option value="normal">Обычный</option>
+        <option value="low">Низкий</option>
+      </select>
+      <span class="spacer"></span>
+      <button id="add" class="primary" type="button">Добавить задание</button>
+    </div>
+
+    <div id="tasks-panel" role="tabpanel">
+      <div class="task-list" id="list"></div>
+      <div id="empty" class="empty" hidden>Заданий пока нет.</div>
+    </div>
+  </main>
+
+  <dialog id="dialog" aria-labelledby="dialog-title">
+    <div class="head" id="dialog-title">Задание</div>
+    <form id="task-form">
+      <div class="field">
+        <label for="f-title">Задание *</label>
+        <input id="f-title" name="title" required maxlength="200">
+      </div>
+      <div class="field">
+        <label for="f-description">Подробное описание</label>
+        <textarea id="f-description" name="description" rows="5"></textarea>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label for="f-assignee">Исполнитель</label>
+          <select id="f-assignee" name="assignee">
+            <option value="owner">Конор</option>
+            <option value="partner">Даниэль</option>
+            <option value="agent">ИИ-агент</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="f-priority">Приоритет</label>
+          <select id="f-priority" name="priority">
+            <option value="high">Высокий</option>
+            <option value="normal" selected>Обычный</option>
+            <option value="low">Низкий</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label for="f-status">Статус</label>
+        <select id="f-status" name="status">
+          <option value="new">Новое</option>
+          <option value="in_progress">В работе</option>
+          <option value="done">Выполнено</option>
+        </select>
+      </div>
+      <div class="actions">
+        <button type="button" id="cancel">Отмена</button>
+        <button type="submit" class="primary" id="save">Сохранить</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script type="module" src="/assets/tasks.js"></script>
+</body>
+</html>
