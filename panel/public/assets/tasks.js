@@ -1,16 +1,18 @@
 import { getSupabase } from "./supabase.js";
-import { mountFlowField } from "./flow-field.js";
+import { mountBackground } from "./background.js";
 import { createSmoothTab } from "./smooth-tab.js";
 
 const ASSIGNEE_LABELS = { owner: "Конор", partner: "Даниэль", agent: "ИИ-агент" };
 const PRIORITY_LABELS = { high: "Высокий", normal: "Обычный", low: "Низкий" };
 const STATUS_LABELS = { new: "Новое", in_progress: "В работе", done: "Выполнено" };
 
+// Gradient tones shared with the clients page: "in progress" and "finished"
+// use the same colours there, so a status reads the same everywhere.
 const STATUS_TABS = [
-  { id: "all", title: "Все", color: "#2563eb" },
-  { id: "new", title: "Новые", color: "#7c3aed" },
-  { id: "in_progress", title: "В работе", color: "#b45309" },
-  { id: "done", title: "Выполнены", color: "#047857" },
+  { id: "all", title: "Все", tone: "blue" },
+  { id: "new", title: "Новые", tone: "orange" },
+  { id: "in_progress", title: "В работе", tone: "purple" },
+  { id: "done", title: "Выполнены", tone: "emerald" },
 ];
 
 const fmtDate = (value) =>
@@ -242,7 +244,7 @@ async function deleteTask(task) {
 }
 
 async function init() {
-  mountFlowField({ theme: "ocean", density: "sparse" });
+  mountBackground();
 
   try {
     sb = await getSupabase();
