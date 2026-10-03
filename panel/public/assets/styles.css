@@ -134,6 +134,31 @@ header.bar h1 {
   min-width: 0;
 }
 
+nav.nav {
+  display: flex;
+  gap: 2px;
+}
+
+nav.nav a {
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  color: var(--muted);
+  font-size: 14px;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+nav.nav a:hover {
+  background: var(--surface-raised);
+  color: var(--text);
+}
+
+nav.nav a[aria-current="page"] {
+  background: var(--surface-raised);
+  color: var(--text);
+  font-weight: 600;
+}
+
 header.bar .who {
   color: var(--muted);
   font-size: 13px;
@@ -595,6 +620,94 @@ dialog .actions {
     padding: 7px 6px;
     font-size: 13px;
   }
+}
+
+/* ─── Tasks ───────────────────────────────────────────────────────────── */
+
+.task-list {
+  display: grid;
+  gap: 12px;
+}
+
+.task {
+  background: var(--surface);
+  -webkit-backdrop-filter: var(--blur);
+  backdrop-filter: var(--blur);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+
+.task.is-done {
+  opacity: 0.6;
+}
+
+.task-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.task-top h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.task.is-done .task-top h3 {
+  text-decoration: line-through;
+}
+
+.task-desc {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+  white-space: pre-wrap;
+}
+
+.task-meta {
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.task-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.task-actions select {
+  width: auto;
+  min-width: 140px;
+  padding: 6px 10px;
+  font-size: 13px;
+}
+
+.task-actions .link {
+  margin-left: auto;
+}
+
+.task-actions .link + .link {
+  margin-left: 0;
+}
+
+.tag.priority-high {
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 35%, transparent);
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
+}
+
+.tag.priority-normal {
+  color: var(--muted);
+}
+
+.tag.priority-low {
+  color: var(--muted);
+  opacity: 0.75;
 }
 
 /* Four tabs with counts don't fit a phone; the summary cards carry the totals. */

@@ -49,12 +49,31 @@ Environment variables (Site configuration → Environment variables):
 | --- | --- |
 | `SUPABASE_URL` | Project URL from Supabase |
 | `SUPABASE_ANON_KEY` | Public anon key, protected by RLS |
+| `SUPABASE_SERVICE_ROLE_KEY` | Secret key, used only by the tasks function |
+| `TASKS_API_TOKEN` | Shared secret an agent sends to `/api/tasks` |
 
-The `service_role` key is not used here and must never be added — it bypasses RLS.
+`SUPABASE_SERVICE_ROLE_KEY` bypasses RLS, so it is read only inside
+`netlify/functions/tasks.mjs` and is never returned to a browser. Putting it in
+`SUPABASE_ANON_KEY` would publish it to every visitor; `config.mjs` refuses to serve
+a secret key for exactly that reason.
+
+## Tasks API
+
+`/api/tasks` lets an AI agent work with the task list. Every request must carry the
+shared secret in an `x-api-token` header; without it the endpoint answers 401 and
+nothing else.
+
+| Method | Does |
+| --- | --- |
+| `GET /api/tasks` | Lists tasks assigned to the agent. Add `?include_done=1` for finished ones. |
+| `POST /api/tasks` | Creates a task from `{title, description, assignee, priority}`. |
+
+A created task is marked `created_by: agent`, so the panel shows where it came from.
+Agents cannot change status or delete tasks — people do that in the panel.
 
 ## Supabase setup
 
-1. Run `supabase/migrations/0001_init.sql` in the SQL editor.
+1. Run the files in `supabase/migrations/` in the SQL editor, in name order.
 2. Authentication → disable new sign-ups, so only manually created accounts exist.
 3. Authentication → Users → create one account per developer.
 
