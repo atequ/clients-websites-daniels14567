@@ -1,64 +1,12 @@
-# Панель клиентов и аналитики
+# websites
 
-Внутренний общий инструмент для двух разработчиков: учёт клиентов на разработку сайтов,
-прайс за каждый сайт, статус оплаты, статус проекта и сводная аналитика.
+Repository shared by the two developers of this project.
 
-Outbound-поиск клиентов (gisfinder, WhatsApp-очередь, персональные страницы прайса) —
-отдельная будущая фаза, в этом коде её нет.
+| Path | What it is |
+| --- | --- |
+| `CLAUDE.md` | Rules for working in this repo. Read it before starting anything. |
+| `<Business name>/` | One folder per client website project. |
+| `panel/` | Internal client and revenue panel. Not a client site, never handed over. |
 
-## Стек
-
-- Статический фронтенд: HTML/CSS/JS без фреймворка, ES-модули
-- Supabase: Postgres + Auth (вход по email/паролю)
-- Netlify: хостинг, автодеплой из `main`, одна функция для выдачи публичной конфигурации
-- Единственная внешняя зависимость — `@supabase/supabase-js`, подключается с CDN
-  (jsDelivr, версия зафиксирована), без npm и без шага сборки
-
-## Структура
-
-```
-public/              статический фронтенд (publish-каталог Netlify)
-  index.html         страница входа
-  admin/index.html   панель: клиенты + аналитика
-  assets/            стили и скрипты
-netlify/functions/
-  config.mjs         отдаёт SUPABASE_URL и SUPABASE_ANON_KEY из переменных окружения
-supabase/migrations/ миграции схемы (только схема, без данных)
-```
-
-## Переменные окружения
-
-Задаются в Netlify (Site configuration → Environment variables), в репозиторий не попадают:
-
-| Переменная            | Значение                                  |
-| --------------------- | ----------------------------------------- |
-| `SUPABASE_URL`        | Project URL из Supabase                   |
-| `SUPABASE_ANON_KEY`   | Публичный anon-ключ (защищён через RLS)    |
-
-`service_role`-ключ в этом проекте не используется и не должен попадать ни в код, ни в Netlify.
-
-## Безопасность
-
-- Данные клиентов живут только в Supabase. В репозитории их нет и быть не должно.
-- `.env`, `*.csv`, `*.xlsx` — в `.gitignore`.
-- На таблице `clients` включён Row Level Security: доступ только авторизованным.
-- Регистрация новых пользователей в Supabase отключена — аккаунты создаёт владелец проекта вручную.
-- Панель полностью закрыта логином, публичных страниц с данными нет.
-
-## Правила работы
-
-- В `main` не коммитим напрямую — только через Pull Request.
-- Одна задача = одна ветка: `feature/<что-делаем>`.
-- `main` автоматически деплоится на Netlify, поэтому в него попадает только проверенный код.
-- Новые зависимости — только с объяснением, зачем они нужны.
-
-## Локальный запуск
-
-```bash
-npm install -g netlify-cli
-netlify link
-netlify dev
-```
-
-`netlify dev` подхватит переменные окружения из привязанного сайта и поднимет функцию
-`/api/config` вместе со статикой.
+Each client site and the panel are deployed as separate Netlify sites from this
+repo, each with its own base directory.
