@@ -1,7 +1,20 @@
 import { getSupabase } from "./supabase.js";
+import { mountFlowField } from "./flow-field.js";
+import { createSmoothTab } from "./smooth-tab.js";
 
 const PAYMENT_LABELS = { paid: "Оплачено", partial: "Частично", unpaid: "Не оплачено" };
 const PROJECT_LABELS = { in_progress: "В работе", on_hold: "На паузе", done: "Сдан" };
+
+// Each project status gets its own indicator colour, like the original
+// component. Shades are dark enough for white text to pass WCAG AA.
+const PROJECT_TABS = [
+  { id: "all", title: "Все", color: "#2563eb" },
+  { id: "in_progress", title: "В работе", color: "#7c3aed" },
+  { id: "on_hold", title: "На паузе", color: "#b45309" },
+  { id: "done", title: "Сданы", color: "#047857" },
+];
+
+const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 const money = new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 0 });
 const fmtMoney = (value) => `${money.format(Number(value) || 0)} ₸`;
@@ -15,7 +28,7 @@ const el = {
   empty: document.getElementById("empty"),
   search: document.getElementById("search"),
   filterPayment: document.getElementById("filter-payment"),
-  filterProject: document.getElementById("filter-project"),
+  panel: document.getElementById("clients-panel"),
   dialog: document.getElementById("dialog"),
   dialogTitle: document.getElementById("dialog-title"),
   form: document.getElementById("client-form"),
@@ -25,6 +38,7 @@ const el = {
 let sb;
 let clients = [];
 let editingId = null;
+let tabs;
 
 function showError(text) {
   el.msg.textContent = text;
@@ -35,17 +49,25 @@ function clearError() {
   el.msg.classList.remove("show");
 }
 
-function visibleClients() {
+// Search and payment filters apply everywhere; the project tab narrows
+// further. Tab counts use the first set so each tab shows what it would list.
+function matchingClients() {
   const query = el.search.value.trim().toLowerCase();
   const payment = el.filterPayment.value;
-  const project = el.filterProject.value;
 
   return clients.filter((c) => {
     if (payment && c.payment_status !== payment) return false;
-    if (project && c.project_status !== project) return false;
     if (query && !c.name.toLowerCase().includes(query)) return false;
     return true;
   });
+}
+
+function updateTabCounts(list) {
+  const counts = { all: list.length };
+  for (const tab of PROJECT_TABS.slice(1)) {
+    counts[tab.id] = list.filter((c) => c.project_status === tab.id).length;
+  }
+  tabs.setCounts(counts);
 }
 
 function renderSummary(list) {
@@ -149,9 +171,25 @@ function renderRows(list) {
 }
 
 function render() {
-  const list = visibleClients();
+  const matching = matchingClients();
+  const project = tabs.selected;
+  const list = project === "all" ? matching : matching.filter((c) => c.project_status === project);
+  updateTabCounts(matching);
   renderSummary(list);
   renderRows(list);
+}
+
+// Slide the table in from the side of the newly picked tab, the way the
+// original component swaps its card content.
+function slideIn(direction) {
+  if (reducedMotion) return;
+  el.panel.animate(
+    [
+      { transform: `translateX(${direction * 32}px)`, opacity: 0, filter: "blur(6px)" },
+      { transform: "none", opacity: 1, filter: "blur(0)" },
+    ],
+    { duration: 400, easing: "cubic-bezier(0.32, 0.72, 0, 1)" },
+  );
 }
 
 async function loadClients() {
@@ -232,6 +270,20 @@ async function deleteClient(client) {
 }
 
 async function init() {
+  mountFlowField({ theme: "ocean", density: "sparse" });
+
+  tabs = createSmoothTab(document.getElementById("project-tabs"), {
+    label: "Статус проекта",
+    items: PROJECT_TABS.map((tab) => ({ ...tab, controls: "clients-panel" })),
+    selected: "all",
+    onChange: (id, direction) => {
+      el.panel.setAttribute("aria-labelledby", `tab-${id}`);
+      render();
+      slideIn(direction);
+    },
+  });
+  el.panel.setAttribute("aria-labelledby", "tab-all");
+
   try {
     sb = await getSupabase();
   } catch (err) {
@@ -255,7 +307,6 @@ async function init() {
   el.form.addEventListener("submit", saveClient);
   el.search.addEventListener("input", render);
   el.filterPayment.addEventListener("change", render);
-  el.filterProject.addEventListener("change", render);
 
   await loadClients();
 }

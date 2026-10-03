@@ -4,42 +4,39 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
+  <meta name="color-scheme" content="dark">
   <title>Клиенты и аналитика</title>
   <link rel="stylesheet" href="/assets/styles.css">
 </head>
 <body>
   <header class="bar">
     <h1>Клиенты и аналитика</h1>
-    <div style="display:flex;align-items:center;gap:12px">
+    <div class="bar-side">
       <span class="who" id="who"></span>
       <button id="logout" type="button">Выйти</button>
     </div>
   </header>
 
-  <div class="wrap">
+  <main class="wrap">
     <div id="msg" class="msg error"></div>
 
-    <section class="summary" id="summary"></section>
+    <section class="summary" id="summary" aria-label="Сводка"></section>
+
+    <div class="tabs-row" id="project-tabs"></div>
 
     <div class="toolbar">
-      <input id="search" type="search" placeholder="Поиск по названию">
-      <select id="filter-payment">
+      <input id="search" type="search" placeholder="Поиск по названию" aria-label="Поиск по названию">
+      <select id="filter-payment" aria-label="Фильтр по оплате">
         <option value="">Оплата: все</option>
         <option value="unpaid">Не оплачено</option>
         <option value="partial">Частично</option>
         <option value="paid">Оплачено</option>
       </select>
-      <select id="filter-project">
-        <option value="">Проект: все</option>
-        <option value="in_progress">В работе</option>
-        <option value="on_hold">На паузе</option>
-        <option value="done">Сдан</option>
-      </select>
       <span class="spacer"></span>
       <button id="add" class="primary" type="button">Добавить клиента</button>
     </div>
 
-    <div class="table-scroll">
+    <div class="table-scroll" id="clients-panel" role="tabpanel">
       <table>
         <thead>
           <tr>
@@ -51,16 +48,16 @@
             <th>Оплата</th>
             <th>Проект</th>
             <th>Дедлайн</th>
-            <th></th>
+            <th><span class="visually-hidden">Действия</span></th>
           </tr>
         </thead>
         <tbody id="rows"></tbody>
       </table>
       <div id="empty" class="empty" hidden>Клиентов пока нет.</div>
     </div>
-  </div>
+  </main>
 
-  <dialog id="dialog">
+  <dialog id="dialog" aria-labelledby="dialog-title">
     <div class="head" id="dialog-title">Клиент</div>
     <form id="client-form">
       <div class="field">

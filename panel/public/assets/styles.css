@@ -1,15 +1,24 @@
 :root {
-  --bg: #f6f7f9;
-  --surface: #ffffff;
-  --border: #e3e6ea;
-  --text: #16191d;
-  --muted: #6b7280;
+  color-scheme: dark;
+  --bg: rgb(2, 6, 10);
+  --surface: rgba(14, 19, 26, 0.72);
+  --surface-solid: #0e131a;
+  --surface-raised: rgba(255, 255, 255, 0.04);
+  --border: rgba(255, 255, 255, 0.09);
+  --border-strong: rgba(255, 255, 255, 0.18);
+  --text: #e8edf3;
+  --muted: #94a0ae;
   --accent: #2563eb;
+  --accent-hover: #3b74f0;
   --accent-text: #ffffff;
-  --danger: #dc2626;
-  --ok: #15803d;
-  --warn: #b45309;
-  --radius: 10px;
+  --focus: #60a5fa;
+  --danger: #f87171;
+  --ok: #4ade80;
+  --warn: #fbbf24;
+  --radius: 14px;
+  --radius-sm: 9px;
+  --blur: blur(14px) saturate(140%);
+  --ease-out: cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
 * {
@@ -18,71 +27,180 @@
 
 body {
   margin: 0;
+  min-height: 100vh;
   background: var(--bg);
   color: var(--text);
   font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
 a {
-  color: var(--accent);
+  color: #7fb2ff;
+  text-underline-offset: 3px;
 }
 
-.wrap {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 20px 16px 64px;
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
 }
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ─── Flow-field background ───────────────────────────────────────────── */
+
+.flow-field {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: rgb(var(--ff-bg));
+  opacity: var(--ff-opacity, 1);
+}
+
+.flow-field canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Vignette plus top/bottom fades, as in the original component. */
+.flow-field::before,
+.flow-field::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.flow-field::before {
+  background: radial-gradient(ellipse 65% 60% at 50% 50%, transparent 20%, rgba(var(--ff-bg), 0.92) 100%);
+}
+
+.flow-field::after {
+  background:
+    linear-gradient(to bottom, rgb(var(--ff-bg)), transparent 160px),
+    linear-gradient(to top, rgb(var(--ff-bg)), transparent 160px);
+}
+
+/* ─── Glass surfaces ──────────────────────────────────────────────────── */
+
+.card,
+.table-scroll,
+header.bar,
+dialog {
+  background: var(--surface);
+  -webkit-backdrop-filter: var(--blur);
+  backdrop-filter: var(--blur);
+}
+
+.card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+
+/* ─── Header ──────────────────────────────────────────────────────────── */
 
 header.bar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
   flex-wrap: wrap;
-  padding: 14px 16px;
-  background: var(--surface);
+  padding: 12px max(16px, calc((100% - 1200px) / 2 + 16px));
   border-bottom: 1px solid var(--border);
 }
 
 header.bar h1 {
   margin: 0;
-  font-size: 17px;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.bar-side {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
 }
 
 header.bar .who {
   color: var(--muted);
   font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
+
+.wrap {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px 16px 64px;
+  /* The table slides sideways when the tab changes; don't let that scroll the page. */
+  overflow-x: clip;
+  overflow-clip-margin: 8px;
+}
+
+/* ─── Controls ────────────────────────────────────────────────────────── */
 
 button {
   font: inherit;
   cursor: pointer;
-  border: 1px solid var(--border);
-  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  background: var(--surface-raised);
   color: var(--text);
   padding: 8px 14px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
+  transition: background-color 150ms ease, border-color 150ms ease, transform 150ms ease;
 }
 
 button:hover {
-  border-color: var(--muted);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+button:active {
+  transform: scale(0.97);
+}
+
+button:disabled {
+  cursor: progress;
+  opacity: 0.7;
 }
 
 button.primary {
   background: var(--accent);
-  border-color: var(--accent);
+  border-color: transparent;
   color: var(--accent-text);
+  font-weight: 500;
 }
 
 button.primary:hover {
-  filter: brightness(1.08);
+  background: var(--accent-hover);
+}
+
+button.block {
+  width: 100%;
 }
 
 button.link {
   border: none;
   background: none;
-  color: var(--accent);
+  color: #7fb2ff;
   padding: 4px 6px;
+}
+
+button.link:hover {
+  background: rgba(255, 255, 255, 0.06);
 }
 
 button.link.danger {
@@ -95,10 +213,23 @@ textarea {
   font: inherit;
   width: 100%;
   padding: 9px 11px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: rgba(0, 0, 0, 0.28);
   color: var(--text);
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: none;
+  border-color: var(--focus);
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.25);
+}
+
+select option {
+  background: var(--surface-solid);
 }
 
 textarea {
@@ -117,18 +248,13 @@ label {
   margin-bottom: 14px;
 }
 
-.card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 16px;
-}
+/* ─── Summary ─────────────────────────────────────────────────────────── */
 
 .summary {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: 12px;
-  margin: 20px 0;
+  margin: 8px 0 20px;
 }
 
 .summary .card .k {
@@ -140,7 +266,95 @@ label {
 .summary .card .v {
   font-size: 22px;
   font-weight: 600;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
 }
+
+/* ─── Smooth tab ──────────────────────────────────────────────────────── */
+
+.tabs-row {
+  margin-bottom: 12px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.smooth-tab {
+  position: relative;
+  display: inline-grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  -webkit-backdrop-filter: var(--blur);
+  backdrop-filter: var(--blur);
+}
+
+.smooth-tab-indicator {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 0;
+  border-radius: 9px;
+  transition:
+    transform var(--st-duration, 400ms) var(--st-ease, cubic-bezier(0.32, 0.72, 0, 1)),
+    width var(--st-duration, 400ms) var(--st-ease, cubic-bezier(0.32, 0.72, 0, 1)),
+    background-color 300ms ease;
+}
+
+.smooth-tab button {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 7px 14px;
+  border: none;
+  border-radius: 9px;
+  background: none;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: color 300ms ease, background-color 150ms ease;
+}
+
+.smooth-tab button:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.smooth-tab button[aria-selected="true"] {
+  color: #fff;
+  background: none;
+}
+
+.smooth-tab button:active {
+  transform: none;
+}
+
+.smooth-tab .count {
+  min-width: 1.6em;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.6;
+}
+
+.smooth-tab .count:empty {
+  display: none;
+}
+
+.smooth-tab button[aria-selected="true"] .count {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* ─── Toolbar & table ─────────────────────────────────────────────────── */
 
 .toolbar {
   display: flex;
@@ -153,7 +367,7 @@ label {
 .toolbar input,
 .toolbar select {
   width: auto;
-  min-width: 150px;
+  min-width: 170px;
   flex: 0 1 auto;
 }
 
@@ -163,7 +377,6 @@ label {
 
 .table-scroll {
   overflow-x: auto;
-  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
 }
@@ -177,7 +390,7 @@ table {
 th,
 td {
   text-align: left;
-  padding: 11px 12px;
+  padding: 12px;
   border-bottom: 1px solid var(--border);
   white-space: nowrap;
 }
@@ -185,9 +398,17 @@ td {
 th {
   font-size: 12px;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.04em;
   color: var(--muted);
   font-weight: 600;
+}
+
+tbody tr {
+  transition: background-color 150ms ease;
+}
+
+tbody tr:hover {
+  background: rgba(255, 255, 255, 0.03);
 }
 
 tbody tr:last-child td {
@@ -210,33 +431,48 @@ tbody tr:last-child td {
 .tag.paid {
   color: var(--ok);
   border-color: color-mix(in srgb, var(--ok) 35%, transparent);
-  background: color-mix(in srgb, var(--ok) 8%, transparent);
+  background: color-mix(in srgb, var(--ok) 10%, transparent);
 }
 
 .tag.partial {
   color: var(--warn);
   border-color: color-mix(in srgb, var(--warn) 35%, transparent);
-  background: color-mix(in srgb, var(--warn) 8%, transparent);
+  background: color-mix(in srgb, var(--warn) 10%, transparent);
 }
 
 .tag.unpaid {
   color: var(--danger);
   border-color: color-mix(in srgb, var(--danger) 35%, transparent);
-  background: color-mix(in srgb, var(--danger) 8%, transparent);
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
 }
 
+.empty {
+  padding: 40px 16px;
+  text-align: center;
+  color: var(--muted);
+}
+
+/* ─── Dialog ──────────────────────────────────────────────────────────── */
+
 dialog {
-  border: none;
+  border: 1px solid var(--border-strong);
   border-radius: var(--radius);
   padding: 0;
   max-width: 520px;
   width: calc(100% - 32px);
-  background: var(--surface);
+  background: rgba(14, 19, 26, 0.9);
   color: var(--text);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+}
+
+dialog[open] {
+  animation: dialog-in 260ms var(--ease-out);
 }
 
 dialog::backdrop {
-  background: rgba(0, 0, 0, 0.45);
+  background: rgba(2, 6, 10, 0.6);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
 }
 
 dialog .head {
@@ -262,10 +498,19 @@ dialog .actions {
   padding-top: 6px;
 }
 
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+}
+
+/* ─── Messages ────────────────────────────────────────────────────────── */
+
 .msg {
   margin: 12px 0;
   padding: 10px 12px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 14px;
   display: none;
 }
@@ -276,15 +521,11 @@ dialog .actions {
 
 .msg.error {
   color: var(--danger);
-  background: color-mix(in srgb, var(--danger) 8%, transparent);
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
   border: 1px solid color-mix(in srgb, var(--danger) 30%, transparent);
 }
 
-.empty {
-  padding: 32px 16px;
-  text-align: center;
-  color: var(--muted);
-}
+/* ─── Login ───────────────────────────────────────────────────────────── */
 
 .login-wrap {
   min-height: 100vh;
@@ -293,38 +534,82 @@ dialog .actions {
   padding: 16px;
 }
 
-.login-wrap .card {
+.login-card {
   width: 100%;
-  max-width: 360px;
+  max-width: 380px;
+  padding: 28px 24px 24px;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+  animation: rise-in 900ms var(--ease-out) 200ms both;
 }
 
 .login-wrap h1 {
   margin: 0 0 4px;
-  font-size: 19px;
+  font-size: 22px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
 }
 
 .login-wrap p.sub {
-  margin: 0 0 20px;
+  margin: 0 0 22px;
   color: var(--muted);
-  font-size: 13px;
+  font-size: 14px;
 }
+
+.login-card button.primary {
+  margin-top: 4px;
+  padding: 10px 14px;
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+}
+
+/* ─── Responsive & motion ─────────────────────────────────────────────── */
 
 @media (max-width: 560px) {
   dialog .row {
     grid-template-columns: 1fr;
   }
+
+  .toolbar input,
+  .toolbar select {
+    flex: 1 1 100%;
+  }
+
+  .toolbar #add {
+    width: 100%;
+  }
+
+  .toolbar .spacer {
+    display: none;
+  }
+
+  .smooth-tab {
+    display: grid;
+  }
+
+  .smooth-tab button {
+    padding: 7px 6px;
+    font-size: 13px;
+  }
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #101216;
-    --surface: #181b20;
-    --border: #2a2f37;
-    --text: #e8eaed;
-    --muted: #9aa2ad;
-    --accent: #3b82f6;
-    --danger: #f87171;
-    --ok: #4ade80;
-    --warn: #fbbf24;
+/* Four tabs with counts don't fit a phone; the summary cards carry the totals. */
+@media (max-width: 420px) {
+  .smooth-tab .count {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 1ms !important;
   }
 }
