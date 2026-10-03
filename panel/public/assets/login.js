@@ -1,4 +1,7 @@
 import { getSupabase } from "./supabase.js";
+import { mountFlowField } from "./flow-field.js";
+
+mountFlowField({ theme: "ocean", density: "medium" });
 
 const form = document.getElementById("login-form");
 const submit = document.getElementById("submit");
