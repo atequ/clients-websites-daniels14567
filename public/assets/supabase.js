@@ -6,7 +6,15 @@ export function getSupabase() {
   if (!clientPromise) {
     clientPromise = fetch("/api/config")
       .then(async (res) => {
-        const body = await res.json();
+        const raw = await res.text();
+        let body;
+        try {
+          body = JSON.parse(raw);
+        } catch {
+          throw new Error(
+            "Конфигурация недоступна: /api/config не ответил. Запустите проект через «netlify dev» или проверьте деплой функции.",
+          );
+        }
         if (!res.ok) throw new Error(body.error || "Не удалось получить конфигурацию");
         return createClient(body.url, body.anonKey);
       })
