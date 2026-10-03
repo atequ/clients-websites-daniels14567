@@ -45,9 +45,11 @@ export function createSmoothTab(host, { items, selected, label, onChange }) {
     button.type = "button";
     button.id = `tab-${item.id}`;
     button.setAttribute("role", "tab");
+    if (item.tone) button.classList.add(`tone-${item.tone}`);
     if (item.controls) button.setAttribute("aria-controls", item.controls);
 
     const title = document.createElement("span");
+    title.className = "label";
     title.textContent = item.title;
     const count = document.createElement("span");
     count.className = "count";
@@ -66,7 +68,9 @@ export function createSmoothTab(host, { items, selected, label, onChange }) {
     if (!animate) indicator.style.transition = "none";
     indicator.style.width = `${button.offsetWidth}px`;
     indicator.style.transform = `translateX(${button.offsetLeft}px)`;
-    indicator.style.background = item.color;
+    // The tone class drives the indicator's gradient; its colours are
+    // registered properties, so they fade as the indicator slides.
+    indicator.className = `smooth-tab-indicator tone-${item.tone}`;
     if (!animate) {
       indicator.getBoundingClientRect();
       indicator.style.transition = "";
