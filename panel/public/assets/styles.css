@@ -174,41 +174,111 @@ button:disabled {
   opacity: 0.7;
 }
 
-/* ─── Gradient button ─────────────────────────────────────────────────── */
+/* ─── Gradient tones ──────────────────────────────────────────────────── */
 /* Port of KokonutUI "Gradient Button" (MIT, https://github.com/kokonut-labs/kokonutui),
    matching how its dark variant actually renders: a dark teal base, a vertical
-   and a diagonal tint, gradient label text and a hover sheen. The label must be
-   wrapped in a <span> so the background layers don't paint over it. */
+   and a diagonal tint, gradient label text and a hover sheen.
 
-button.btn-gradient {
+   The colours live in tone classes so buttons, the tab indicator and the
+   shimmering statuses share one palette. Emerald, purple and orange are the
+   original's dark palette with each layer's opacity folded into its alpha;
+   blue follows the same recipe. */
+
+/* Registered so the tab indicator can fade between tones as it slides. */
+@property --g-overlay-from { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --g-overlay-to { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --g-accent-from { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --g-accent-to { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --g-text-from { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --g-text-to { syntax: "<color>"; inherits: true; initial-value: transparent; }
+
+:root {
   --g-base: 12, 31, 33;
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: 48px;
-  padding: 0 16px;
-  border: 2px solid rgba(var(--g-base), 0.9);
-  border-radius: 8px;
-  font-size: 18px;
-  font-weight: 300;
-  letter-spacing: -0.04em;
-  white-space: nowrap;
 }
 
+.tone-emerald {
+  --g-overlay-from: rgba(52, 123, 82, 0.32);
+  --g-overlay-to: rgba(13, 100, 55, 0.24);
+  --g-accent-from: rgba(135, 246, 183, 0.1);
+  --g-accent-to: rgba(23, 54, 42, 0.5);
+  --g-text-from: #8aeeca;
+  --g-text-to: #73f8a8;
+  --g-hover-edge: rgba(23, 54, 42, 0.2);
+  --g-hover-mid: rgba(135, 246, 183, 0.1);
+  --g-shimmer-dim: #1f9d63;
+}
+
+.tone-purple {
+  --g-overlay-from: rgba(126, 34, 206, 0.32);
+  --g-overlay-to: rgba(107, 70, 193, 0.24);
+  --g-accent-from: rgba(233, 216, 253, 0.1);
+  --g-accent-to: rgba(68, 51, 122, 0.5);
+  --g-text-from: #e9d8fd;
+  --g-text-to: #d6bcfa;
+  --g-hover-edge: rgba(68, 51, 122, 0.2);
+  --g-hover-mid: rgba(183, 148, 244, 0.1);
+  --g-shimmer-dim: #7c4fd0;
+}
+
+.tone-orange {
+  --g-overlay-from: rgba(221, 107, 32, 0.32);
+  --g-overlay-to: rgba(192, 86, 33, 0.24);
+  --g-accent-from: rgba(254, 215, 170, 0.1);
+  --g-accent-to: rgba(123, 52, 30, 0.5);
+  --g-text-from: #fed7aa;
+  --g-text-to: #fbd38d;
+  --g-hover-edge: rgba(123, 52, 30, 0.2);
+  --g-hover-mid: rgba(237, 137, 54, 0.1);
+  --g-shimmer-dim: #c2692a;
+}
+
+.tone-blue {
+  --g-overlay-from: rgba(37, 99, 235, 0.32);
+  --g-overlay-to: rgba(29, 78, 216, 0.24);
+  --g-accent-from: rgba(191, 219, 254, 0.1);
+  --g-accent-to: rgba(30, 58, 138, 0.5);
+  --g-text-from: #bfdbfe;
+  --g-text-to: #93c5fd;
+  --g-hover-edge: rgba(30, 58, 138, 0.2);
+  --g-hover-mid: rgba(96, 165, 250, 0.1);
+  --g-shimmer-dim: #2f6fe0;
+}
+
+/* The layered gradient surface shared by buttons and the tab indicator. */
 button.btn-gradient,
-button.btn-gradient:hover {
+button.btn-gradient:hover,
+.smooth-tab-indicator {
+  border: 2px solid rgba(var(--g-base), 0.9);
   background:
     linear-gradient(to bottom right, var(--g-accent-from), rgb(var(--g-base)) 50%, var(--g-accent-to)) padding-box,
     linear-gradient(to bottom, var(--g-overlay-from), rgba(var(--g-base), 0.8) 50%, var(--g-overlay-to)) padding-box,
     rgb(var(--g-base)) padding-box;
 }
 
-button.btn-gradient > span {
+/* Gradient label text; the label must be its own element so the layers above
+   don't paint over it. */
+button.btn-gradient > span,
+.smooth-tab button[aria-selected="true"] .label {
   background: linear-gradient(to bottom, var(--g-text-from), var(--g-text-to));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+}
+
+/* ─── Gradient button ─────────────────────────────────────────────────── */
+
+button.btn-gradient {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 48px;
+  padding: 0 16px;
+  border-radius: 8px;
+  font-size: 18px;
+  font-weight: 300;
+  letter-spacing: -0.04em;
+  white-space: nowrap;
 }
 
 button.btn-gradient::after {
@@ -224,41 +294,6 @@ button.btn-gradient::after {
 
 button.btn-gradient:hover::after {
   opacity: 1;
-}
-
-/* Layer colours from the original's dark palette, with each layer's opacity
-   folded into its alpha values. */
-.btn-gradient.emerald {
-  --g-overlay-from: rgba(52, 123, 82, 0.32);
-  --g-overlay-to: rgba(13, 100, 55, 0.24);
-  --g-accent-from: rgba(135, 246, 183, 0.1);
-  --g-accent-to: rgba(23, 54, 42, 0.5);
-  --g-text-from: #8aeeca;
-  --g-text-to: #73f8a8;
-  --g-hover-edge: rgba(23, 54, 42, 0.2);
-  --g-hover-mid: rgba(135, 246, 183, 0.1);
-}
-
-.btn-gradient.purple {
-  --g-overlay-from: rgba(126, 34, 206, 0.32);
-  --g-overlay-to: rgba(107, 70, 193, 0.24);
-  --g-accent-from: rgba(233, 216, 253, 0.1);
-  --g-accent-to: rgba(68, 51, 122, 0.5);
-  --g-text-from: #e9d8fd;
-  --g-text-to: #d6bcfa;
-  --g-hover-edge: rgba(68, 51, 122, 0.2);
-  --g-hover-mid: rgba(183, 148, 244, 0.1);
-}
-
-.btn-gradient.orange {
-  --g-overlay-from: rgba(221, 107, 32, 0.32);
-  --g-overlay-to: rgba(192, 86, 33, 0.24);
-  --g-accent-from: rgba(254, 215, 170, 0.1);
-  --g-accent-to: rgba(123, 52, 30, 0.5);
-  --g-text-from: #fed7aa;
-  --g-text-to: #fbd38d;
-  --g-hover-edge: rgba(123, 52, 30, 0.2);
-  --g-hover-mid: rgba(237, 137, 54, 0.1);
 }
 
 /* Inline with inputs (toolbar, dialog) the button matches their height. */
@@ -382,7 +417,10 @@ label {
   transition:
     transform var(--st-duration, 400ms) var(--st-ease, cubic-bezier(0.32, 0.72, 0, 1)),
     width var(--st-duration, 400ms) var(--st-ease, cubic-bezier(0.32, 0.72, 0, 1)),
-    background-color 300ms ease;
+    --g-overlay-from 300ms ease,
+    --g-overlay-to 300ms ease,
+    --g-accent-from 300ms ease,
+    --g-accent-to 300ms ease;
 }
 
 .smooth-tab button {
@@ -409,7 +447,7 @@ label {
 }
 
 .smooth-tab button[aria-selected="true"] {
-  color: #fff;
+  color: var(--g-text-to);
   background: none;
 }
 
@@ -432,7 +470,29 @@ label {
 }
 
 .smooth-tab button[aria-selected="true"] .count {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* ─── Shimmer text ────────────────────────────────────────────────────── */
+/* Port of KokonutUI "Shimmer Text" (MIT, https://github.com/kokonut-labs/kokonutui):
+   a dim band sweeps through gradient text. Uses the tone palette above. */
+
+.shimmer {
+  background: linear-gradient(to right, var(--g-text-to), var(--g-shimmer-dim), var(--g-text-to)) 0 0 / 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: 600;
+  animation: shimmer 2.5s linear infinite;
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 200% center;
+  }
+  to {
+    background-position: -200% center;
+  }
 }
 
 /* ─── Toolbar & table ─────────────────────────────────────────────────── */
@@ -685,6 +745,12 @@ dialog .actions {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .shimmer {
+    animation-name: none;
+    background: none;
+    color: var(--g-text-to);
+  }
+
   *,
   *::before,
   *::after {

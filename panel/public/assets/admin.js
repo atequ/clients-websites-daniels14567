@@ -5,13 +5,15 @@ import { createSmoothTab } from "./smooth-tab.js";
 const PAYMENT_LABELS = { paid: "Оплачено", partial: "Частично", unpaid: "Не оплачено" };
 const PROJECT_LABELS = { in_progress: "В работе", on_hold: "На паузе", done: "Сдан" };
 
-// Each project status gets its own indicator colour, like the original
-// component. Shades are dark enough for white text to pass WCAG AA.
+// One gradient tone per project status, shared by the tabs and the
+// shimmering status labels so both read as the same colour.
+const PROJECT_TONES = { in_progress: "purple", on_hold: "orange", done: "emerald" };
+
 const PROJECT_TABS = [
-  { id: "all", title: "Все", color: "#2563eb" },
-  { id: "in_progress", title: "В работе", color: "#7c3aed" },
-  { id: "on_hold", title: "На паузе", color: "#b45309" },
-  { id: "done", title: "Сданы", color: "#047857" },
+  { id: "all", title: "Все", tone: "blue" },
+  { id: "in_progress", title: "В работе", tone: PROJECT_TONES.in_progress },
+  { id: "on_hold", title: "На паузе", tone: PROJECT_TONES.on_hold },
+  { id: "done", title: "Сданы", tone: PROJECT_TONES.done },
 ];
 
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -146,7 +148,10 @@ function renderRows(list) {
       payment.append(tag);
 
       const project = document.createElement("td");
-      project.textContent = PROJECT_LABELS[client.project_status];
+      const status = document.createElement("span");
+      status.className = `shimmer tone-${PROJECT_TONES[client.project_status]}`;
+      status.textContent = PROJECT_LABELS[client.project_status];
+      project.append(status);
 
       const deadline = document.createElement("td");
       deadline.textContent = fmtDate(client.deadline);
