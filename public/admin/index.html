@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Клиенты и аналитика</title>
+  <link rel="stylesheet" href="/assets/styles.css">
+</head>
+<body>
+  <header class="bar">
+    <h1>Клиенты и аналитика</h1>
+    <div style="display:flex;align-items:center;gap:12px">
+      <span class="who" id="who"></span>
+      <button id="logout" type="button">Выйти</button>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <div id="msg" class="msg error"></div>
+
+    <section class="summary" id="summary"></section>
+
+    <div class="toolbar">
+      <input id="search" type="search" placeholder="Поиск по названию">
+      <select id="filter-payment">
+        <option value="">Оплата: все</option>
+        <option value="unpaid">Не оплачено</option>
+        <option value="partial">Частично</option>
+        <option value="paid">Оплачено</option>
+      </select>
+      <select id="filter-project">
+        <option value="">Проект: все</option>
+        <option value="in_progress">В работе</option>
+        <option value="on_hold">На паузе</option>
+        <option value="done">Сдан</option>
+      </select>
+      <span class="spacer"></span>
+      <button id="add" class="primary" type="button">Добавить клиента</button>
+    </div>
+
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Клиент</th>
+            <th>Контакт</th>
+            <th class="num">Прайс</th>
+            <th class="num">Оплачено</th>
+            <th class="num">Остаток</th>
+            <th>Оплата</th>
+            <th>Проект</th>
+            <th>Дедлайн</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+      <div id="empty" class="empty" hidden>Клиентов пока нет.</div>
+    </div>
+  </div>
+
+  <dialog id="dialog">
+    <div class="head" id="dialog-title">Клиент</div>
+    <form id="client-form">
+      <div class="field">
+        <label for="f-name">Название / клиент *</label>
+        <input id="f-name" name="name" required>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label for="f-contact">Контактное лицо</label>
+          <input id="f-contact" name="contact_person">
+        </div>
+        <div class="field">
+          <label for="f-phone">Телефон</label>
+          <input id="f-phone" name="phone" inputmode="tel">
+        </div>
+      </div>
+      <div class="field">
+        <label for="f-site">Ссылка на сайт</label>
+        <input id="f-site" name="site_url" type="url" placeholder="https://">
+      </div>
+      <div class="row">
+        <div class="field">
+          <label for="f-price">Прайс за сайт, ₸</label>
+          <input id="f-price" name="price" type="number" min="0" step="1000" value="0">
+        </div>
+        <div class="field">
+          <label for="f-paid">Оплачено, ₸</label>
+          <input id="f-paid" name="paid_amount" type="number" min="0" step="1000" value="0">
+        </div>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label for="f-project">Статус проекта</label>
+          <select id="f-project" name="project_status">
+            <option value="in_progress">В работе</option>
+            <option value="on_hold">На паузе</option>
+            <option value="done">Сдан</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="f-deadline">Дедлайн</label>
+          <input id="f-deadline" name="deadline" type="date">
+        </div>
+      </div>
+      <div class="field">
+        <label for="f-note">Заметка</label>
+        <textarea id="f-note" name="note"></textarea>
+      </div>
+      <div class="actions">
+        <button type="button" id="cancel">Отмена</button>
+        <button type="submit" class="primary" id="save">Сохранить</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script type="module" src="/assets/admin.js"></script>
+</body>
+</html>
