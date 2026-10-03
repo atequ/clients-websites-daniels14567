@@ -5,6 +5,7 @@ mountFlowField({ theme: "ocean", density: "medium" });
 
 const form = document.getElementById("login-form");
 const submit = document.getElementById("submit");
+const submitLabel = document.getElementById("submit-label");
 const msg = document.getElementById("msg");
 
 function showError(text) {
@@ -23,7 +24,7 @@ form.addEventListener("submit", async (event) => {
   event.preventDefault();
   msg.classList.remove("show");
   submit.disabled = true;
-  submit.textContent = "Вход…";
+  submitLabel.textContent = "Вход…";
 
   try {
     const sb = await getSupabase();
@@ -36,6 +37,6 @@ form.addEventListener("submit", async (event) => {
   } catch (err) {
     showError(err.message === "Invalid login credentials" ? "Неверный email или пароль" : err.message);
     submit.disabled = false;
-    submit.textContent = "Войти";
+    submitLabel.textContent = "Войти";
   }
 });
