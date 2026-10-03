@@ -8,9 +8,6 @@
   --border-strong: rgba(255, 255, 255, 0.18);
   --text: #e8edf3;
   --muted: #94a0ae;
-  --accent: #2563eb;
-  --accent-hover: #3b74f0;
-  --accent-text: #ffffff;
   --focus: #60a5fa;
   --danger: #f87171;
   --ok: #4ade80;
@@ -177,15 +174,99 @@ button:disabled {
   opacity: 0.7;
 }
 
-button.primary {
-  background: var(--accent);
-  border-color: transparent;
-  color: var(--accent-text);
-  font-weight: 500;
+/* ─── Gradient button ─────────────────────────────────────────────────── */
+/* Port of KokonutUI "Gradient Button" (MIT, https://github.com/kokonut-labs/kokonutui),
+   matching how its dark variant actually renders: a dark teal base, a vertical
+   and a diagonal tint, gradient label text and a hover sheen. The label must be
+   wrapped in a <span> so the background layers don't paint over it. */
+
+button.btn-gradient {
+  --g-base: 12, 31, 33;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 48px;
+  padding: 0 16px;
+  border: 2px solid rgba(var(--g-base), 0.9);
+  border-radius: 8px;
+  font-size: 18px;
+  font-weight: 300;
+  letter-spacing: -0.04em;
+  white-space: nowrap;
 }
 
-button.primary:hover {
-  background: var(--accent-hover);
+button.btn-gradient,
+button.btn-gradient:hover {
+  background:
+    linear-gradient(to bottom right, var(--g-accent-from), rgb(var(--g-base)) 50%, var(--g-accent-to)) padding-box,
+    linear-gradient(to bottom, var(--g-overlay-from), rgba(var(--g-base), 0.8) 50%, var(--g-overlay-to)) padding-box,
+    rgb(var(--g-base)) padding-box;
+}
+
+button.btn-gradient > span {
+  background: linear-gradient(to bottom, var(--g-text-from), var(--g-text-to));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+button.btn-gradient::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 6px;
+  background: linear-gradient(to right, var(--g-hover-edge), var(--g-hover-mid), var(--g-hover-edge));
+  opacity: 0;
+  transition: opacity 300ms ease;
+  pointer-events: none;
+}
+
+button.btn-gradient:hover::after {
+  opacity: 1;
+}
+
+/* Layer colours from the original's dark palette, with each layer's opacity
+   folded into its alpha values. */
+.btn-gradient.emerald {
+  --g-overlay-from: rgba(52, 123, 82, 0.32);
+  --g-overlay-to: rgba(13, 100, 55, 0.24);
+  --g-accent-from: rgba(135, 246, 183, 0.1);
+  --g-accent-to: rgba(23, 54, 42, 0.5);
+  --g-text-from: #8aeeca;
+  --g-text-to: #73f8a8;
+  --g-hover-edge: rgba(23, 54, 42, 0.2);
+  --g-hover-mid: rgba(135, 246, 183, 0.1);
+}
+
+.btn-gradient.purple {
+  --g-overlay-from: rgba(126, 34, 206, 0.32);
+  --g-overlay-to: rgba(107, 70, 193, 0.24);
+  --g-accent-from: rgba(233, 216, 253, 0.1);
+  --g-accent-to: rgba(68, 51, 122, 0.5);
+  --g-text-from: #e9d8fd;
+  --g-text-to: #d6bcfa;
+  --g-hover-edge: rgba(68, 51, 122, 0.2);
+  --g-hover-mid: rgba(183, 148, 244, 0.1);
+}
+
+.btn-gradient.orange {
+  --g-overlay-from: rgba(221, 107, 32, 0.32);
+  --g-overlay-to: rgba(192, 86, 33, 0.24);
+  --g-accent-from: rgba(254, 215, 170, 0.1);
+  --g-accent-to: rgba(123, 52, 30, 0.5);
+  --g-text-from: #fed7aa;
+  --g-text-to: #fbd38d;
+  --g-hover-edge: rgba(123, 52, 30, 0.2);
+  --g-hover-mid: rgba(237, 137, 54, 0.1);
+}
+
+/* Inline with inputs (toolbar, dialog) the button matches their height. */
+.toolbar button.btn-gradient,
+dialog button.btn-gradient {
+  height: 42px;
+  font-size: 16px;
+  letter-spacing: -0.02em;
 }
 
 button.block {
@@ -555,9 +636,8 @@ dialog .actions {
   font-size: 14px;
 }
 
-.login-card button.primary {
+.login-card button.btn-gradient {
   margin-top: 4px;
-  padding: 10px 14px;
 }
 
 @keyframes rise-in {
