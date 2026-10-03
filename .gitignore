@@ -3,6 +3,11 @@
 .env.*
 !.env.example
 
+# Data files (never commit customer/business data)
+*.csv
+*.xlsx
+*.xls
+
 # Dependencies & build output
 node_modules/
 .netlify/
