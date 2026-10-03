@@ -2,7 +2,7 @@ import { getSupabase } from "./supabase.js";
 import { mountFlowField } from "./flow-field.js";
 import { createSmoothTab } from "./smooth-tab.js";
 
-const ASSIGNEE_LABELS = { owner: "owner", partner: "partner", agent: "ИИ-агент" };
+const ASSIGNEE_LABELS = { owner: "Конор", partner: "Даниэль", agent: "ИИ-агент" };
 const PRIORITY_LABELS = { high: "Высокий", normal: "Обычный", low: "Низкий" };
 const STATUS_LABELS = { new: "Новое", in_progress: "В работе", done: "Выполнено" };
 
