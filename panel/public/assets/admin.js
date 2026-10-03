@@ -1,5 +1,5 @@
 import { getSupabase } from "./supabase.js";
-import { mountFlowField } from "./flow-field.js";
+import { mountBackground } from "./background.js";
 import { createSmoothTab } from "./smooth-tab.js";
 
 const PAYMENT_LABELS = { paid: "Оплачено", partial: "Частично", unpaid: "Не оплачено" };
@@ -275,7 +275,7 @@ async function deleteClient(client) {
 }
 
 async function init() {
-  mountFlowField({ theme: "ocean", density: "sparse" });
+  mountBackground();
 
   tabs = createSmoothTab(document.getElementById("project-tabs"), {
     label: "Статус проекта",
