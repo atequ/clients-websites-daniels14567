@@ -21,6 +21,53 @@ const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matc
 const money = new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 0 });
 const fmtMoney = (value) => `${money.format(Number(value) || 0)} ₸`;
 const fmtDate = (value) => (value ? new Date(value).toLocaleDateString("ru-RU") : "—");
+const fmtShortDate = (value) =>
+  new Date(`${value}T00:00:00`).toLocaleDateString("ru-RU", { day: "numeric", month: "short" });
+
+// Whole days from today to a "YYYY-MM-DD" date, in the viewer's time zone.
+function daysFromToday(value) {
+  const [y, m, d] = value.split("-").map(Number);
+  const now = new Date();
+  return Math.round((Date.UTC(y, m - 1, d) - Date.UTC(now.getFullYear(), now.getMonth(), now.getDate())) / 864e5);
+}
+
+// A follow-up counts as due once its date arrives, unless the project is done.
+const isFollowUpDue = (c) => Boolean(c.next_step_date) && c.project_status !== "done" && daysFromToday(c.next_step_date) <= 0;
+
+function nextStepCell(client) {
+  const cell = document.createElement("td");
+  cell.className = "next-step";
+  if (!client.next_step && !client.next_step_date) {
+    cell.textContent = "—";
+    return cell;
+  }
+
+  if (client.next_step) {
+    const text = document.createElement("div");
+    text.className = "next-step-text";
+    text.textContent = client.next_step;
+    text.title = client.next_step;
+    cell.append(text);
+  }
+
+  if (client.next_step_date) {
+    const days = daysFromToday(client.next_step_date);
+    const due = document.createElement("span");
+    const finished = client.project_status === "done";
+    if (days < 0 && !finished) {
+      due.className = "due overdue";
+      due.textContent = `просрочено на ${-days} дн.`;
+    } else if (days === 0 && !finished) {
+      due.className = "due today";
+      due.textContent = "сегодня";
+    } else {
+      due.className = "due";
+      due.textContent = days === 1 ? "завтра" : fmtShortDate(client.next_step_date);
+    }
+    cell.append(due);
+  }
+  return cell;
+}
 
 const el = {
   msg: document.getElementById("msg"),
@@ -78,6 +125,7 @@ function renderSummary(list) {
   const outstanding = list.reduce((sum, c) => sum + Math.max(Number(c.price) - Number(c.paid_amount), 0), 0);
   const done = list.filter((c) => c.project_status === "done").length;
   const avg = list.length ? totalPrice / list.length : 0;
+  const followUps = list.filter(isFollowUpDue).length;
 
   const cards = [
     ["Клиентов", String(list.length)],
@@ -86,12 +134,13 @@ function renderSummary(list) {
     ["К получению", fmtMoney(outstanding)],
     ["Средний чек", fmtMoney(avg)],
     ["Сдано проектов", `${done} из ${list.length}`],
+    ["Связаться сегодня", String(followUps), followUps > 0 ? "attention" : ""],
   ];
 
   el.summary.replaceChildren(
-    ...cards.map(([key, value]) => {
+    ...cards.map(([key, value, modifier]) => {
       const card = document.createElement("div");
-      card.className = "card";
+      card.className = modifier ? `card ${modifier}` : "card";
       const k = document.createElement("div");
       k.className = "k";
       k.textContent = key;
@@ -126,8 +175,21 @@ function renderRows(list) {
         name.textContent = client.name;
       }
 
+      // Name and phone on separate lines keep the table narrow enough to fit.
       const contact = document.createElement("td");
-      contact.textContent = [client.contact_person, client.phone].filter(Boolean).join(", ") || "—";
+      contact.className = "contact";
+      if (!client.contact_person && !client.phone) contact.textContent = "—";
+      if (client.contact_person) {
+        const person = document.createElement("div");
+        person.textContent = client.contact_person;
+        contact.append(person);
+      }
+      if (client.phone) {
+        const phone = document.createElement("div");
+        phone.className = "phone";
+        phone.textContent = client.phone;
+        contact.append(phone);
+      }
 
       const price = document.createElement("td");
       price.className = "num";
@@ -169,7 +231,7 @@ function renderRows(list) {
       remove.addEventListener("click", () => deleteClient(client));
       actions.append(edit, remove);
 
-      tr.append(name, contact, price, paid, left, payment, project, deadline, actions);
+      tr.append(name, contact, price, paid, left, payment, project, nextStepCell(client), deadline, actions);
       return tr;
     }),
   );
@@ -226,6 +288,8 @@ function openDialog(client) {
     el.form.project_status.value = client.project_status;
     el.form.deadline.value = client.deadline ?? "";
     el.form.note.value = client.note ?? "";
+    el.form.next_step.value = client.next_step ?? "";
+    el.form.next_step_date.value = client.next_step_date ?? "";
   }
 
   el.dialog.showModal();
@@ -246,6 +310,8 @@ async function saveClient(event) {
     project_status: el.form.project_status.value,
     deadline: el.form.deadline.value || null,
     note: el.form.note.value.trim() || null,
+    next_step: el.form.next_step.value.trim() || null,
+    next_step_date: el.form.next_step_date.value || null,
   };
 
   const { error } = editingId
