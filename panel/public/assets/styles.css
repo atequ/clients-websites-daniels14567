@@ -375,7 +375,7 @@ label {
 
 .summary {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
   gap: 12px;
   margin: 8px 0 20px;
 }
@@ -502,6 +502,54 @@ label {
   }
 }
 
+td.contact .phone {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+/* ─── Next step ───────────────────────────────────────────────────────── */
+
+td.next-step {
+  white-space: normal;
+  min-width: 140px;
+}
+
+.next-step-text {
+  max-width: 170px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.due {
+  display: inline-block;
+  margin-top: 3px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.due.today {
+  color: var(--warn);
+  font-weight: 600;
+}
+
+.due.overdue {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.summary .card.attention {
+  border-color: color-mix(in srgb, var(--warn) 45%, transparent);
+}
+
+.summary .card.attention .v {
+  color: var(--warn);
+}
+
+dialog .next-step-row {
+  grid-template-columns: 2fr 1fr;
+}
+
 /* ─── Toolbar & table ─────────────────────────────────────────────────── */
 
 .toolbar {
@@ -538,7 +586,7 @@ table {
 th,
 td {
   text-align: left;
-  padding: 12px;
+  padding: 12px 10px;
   border-bottom: 1px solid var(--border);
   white-space: nowrap;
 }

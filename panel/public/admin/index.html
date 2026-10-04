@@ -53,6 +53,7 @@
             <th class="num">Остаток</th>
             <th>Оплата</th>
             <th>Проект</th>
+            <th>Следующий шаг</th>
             <th>Дедлайн</th>
             <th><span class="visually-hidden">Действия</span></th>
           </tr>
@@ -106,6 +107,16 @@
         <div class="field">
           <label for="f-deadline">Дедлайн</label>
           <input id="f-deadline" name="deadline" type="date">
+        </div>
+      </div>
+      <div class="row next-step-row">
+        <div class="field">
+          <label for="f-next-step">Следующий шаг</label>
+          <input id="f-next-step" name="next_step" maxlength="200" placeholder="Например: позвонить насчёт логотипа">
+        </div>
+        <div class="field">
+          <label for="f-next-step-date">Когда</label>
+          <input id="f-next-step-date" name="next_step_date" type="date">
         </div>
       </div>
       <div class="field">
