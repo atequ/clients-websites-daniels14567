@@ -87,6 +87,17 @@ const el = {
 let sb;
 let clients = [];
 let editingId = null;
+
+// The next-step columns come from migration 0003. Until it has run, the page
+// keeps working without them: the fields are hidden and saves leave them out.
+let hasNextStep = true;
+
+function setNextStepAvailable(available) {
+  hasNextStep = available;
+  el.form.querySelector(".next-step-row").style.display = available ? "" : "none";
+}
+
+const isMissingNextStepColumn = (error) => /next_step/.test(error?.message ?? "");
 let tabs;
 
 function showError(text) {
@@ -270,6 +281,7 @@ async function loadClients() {
     return;
   }
   clients = data;
+  if (clients.length && !("next_step" in clients[0])) setNextStepAvailable(false);
   render();
 }
 
@@ -310,13 +322,21 @@ async function saveClient(event) {
     project_status: el.form.project_status.value,
     deadline: el.form.deadline.value || null,
     note: el.form.note.value.trim() || null,
+  };
+  const withNextStep = {
+    ...payload,
     next_step: el.form.next_step.value.trim() || null,
     next_step_date: el.form.next_step_date.value || null,
   };
 
-  const { error } = editingId
-    ? await sb.from("clients").update(payload).eq("id", editingId)
-    : await sb.from("clients").insert(payload);
+  const write = (body) =>
+    editingId ? sb.from("clients").update(body).eq("id", editingId) : sb.from("clients").insert(body);
+
+  let { error } = await write(hasNextStep ? withNextStep : payload);
+  if (error && hasNextStep && isMissingNextStepColumn(error)) {
+    setNextStepAvailable(false);
+    ({ error } = await write(payload));
+  }
 
   el.save.disabled = false;
 
