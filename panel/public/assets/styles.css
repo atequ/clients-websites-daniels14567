@@ -73,7 +73,6 @@ body {
   font: 15px/1.5 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   letter-spacing: -0.01em;
   -webkit-font-smoothing: antialiased;
-  transition: background-color 200ms ease, color 200ms ease;
 }
 
 a {
@@ -313,55 +312,37 @@ label {
   margin-bottom: 14px;
 }
 
-/* ─── Theme switch ────────────────────────────────────────────────────── */
+/* ─── Theme button ────────────────────────────────────────────────────── */
+/* A quiet icon: no fill until hovered, so it doesn't compete with the page. */
 
-.theme-switch {
-  min-height: 0;
+.theme-toggle {
+  width: 32px;
+  min-height: 32px;
   padding: 0;
-  background: none;
-}
-
-.theme-switch:hover {
-  background: none;
-}
-
-.theme-switch-track {
-  position: relative;
-  display: block;
-  width: 46px;
-  height: 26px;
-  border-radius: 999px;
-  background: var(--fill-strong);
-  transition: background-color 250ms ease;
-}
-
-.theme-switch[aria-checked="true"] .theme-switch-track {
-  background: var(--accent);
-}
-
-.theme-switch-thumb {
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  display: grid;
-  place-items: center;
-  width: 22px;
-  height: 22px;
   border-radius: 50%;
-  background: #ffffff;
-  color: #ff9f0a;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2), 0 0 1px rgba(0, 0, 0, 0.1);
-  transition: transform 250ms var(--ease-out);
+  background: none;
+  color: var(--muted);
 }
 
-.theme-switch[aria-checked="true"] .theme-switch-thumb {
-  transform: translateX(20px);
-  color: #0a84ff;
+.theme-toggle:hover {
+  background: var(--fill);
+  color: var(--text);
 }
 
-.theme-switch-thumb svg {
-  width: 13px;
-  height: 13px;
+.theme-toggle svg {
+  width: 17px;
+  height: 17px;
+}
+
+#theme-toggle {
+  display: flex;
+}
+
+/* Set while the theme changes, so nothing fades between palettes. */
+.theme-swapping *,
+.theme-swapping *::before,
+.theme-swapping *::after {
+  transition: none !important;
 }
 
 /* ─── Summary ─────────────────────────────────────────────────────────── */
@@ -713,8 +694,8 @@ dialog .actions {
 
 .login-theme {
   position: fixed;
-  top: 16px;
-  right: 16px;
+  top: 12px;
+  right: 12px;
 }
 
 .login-card {
