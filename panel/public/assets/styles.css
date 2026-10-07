@@ -22,6 +22,11 @@
   box-sizing: border-box;
 }
 
+/* Keep `hidden` working on elements whose class sets a display (flex, grid). */
+[hidden] {
+  display: none !important;
+}
+
 body {
   margin: 0;
   min-height: 100vh;
@@ -774,7 +779,8 @@ dialog .actions {
     flex: 1 1 100%;
   }
 
-  .toolbar #add {
+  .toolbar #add,
+  .toolbar #toggle-all {
     width: 100%;
   }
 
@@ -812,6 +818,10 @@ dialog .actions {
   opacity: 0.6;
 }
 
+.task:not(.is-open) {
+  padding-block: 12px;
+}
+
 .task-top {
   display: flex;
   align-items: flex-start;
@@ -820,6 +830,8 @@ dialog .actions {
 }
 
 .task-top h3 {
+  flex: 1 1 auto;
+  min-width: 0;
   margin: 0;
   font-size: 15px;
   font-weight: 600;
@@ -829,11 +841,75 @@ dialog .actions {
   text-decoration: line-through;
 }
 
+/* Title and group headers are the collapse toggles: plain text, not button chrome. */
+.task-toggle,
+.task-group-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  font-weight: inherit;
+  text-align: left;
+}
+
+.task-toggle:hover,
+.task-group-toggle:hover {
+  background: none;
+}
+
+.task-toggle:active,
+.task-group-toggle:active {
+  transform: none;
+}
+
+.task-toggle:focus-visible,
+.task-group-toggle:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+.chevron {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  margin: 0 3px;
+  border-right: 2px solid var(--muted);
+  border-bottom: 2px solid var(--muted);
+  transform: rotate(-45deg);
+  transition: transform 200ms var(--ease-out);
+}
+
+[aria-expanded="true"] > .chevron {
+  transform: rotate(45deg);
+}
+
+/* Lines up the card's body with the title text, past the chevron. */
+.task-desc,
+.task-meta,
+.task-actions {
+  margin-left: 23px;
+}
+
 .task-desc {
-  margin: 8px 0 0;
+  margin-top: 8px;
+  margin-bottom: 0;
   color: var(--muted);
   font-size: 14px;
   white-space: pre-wrap;
+}
+
+.task:not(.is-open) .task-desc {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+  overflow: hidden;
+  white-space: normal;
 }
 
 .task-meta {
@@ -842,12 +918,41 @@ dialog .actions {
   font-size: 13px;
 }
 
+.task:not(.is-open) .task-meta {
+  margin-top: 6px;
+}
+
 .task-actions {
   display: flex;
   align-items: center;
   gap: 8px;
   margin-top: 12px;
   flex-wrap: wrap;
+}
+
+.task-group + .task-group {
+  margin-top: 14px;
+}
+
+.task-group-head {
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.group-count {
+  padding: 1px 8px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 12px;
+  letter-spacing: 0;
+}
+
+.toolbar #toggle-all {
+  height: 42px;
 }
 
 .task-actions select {

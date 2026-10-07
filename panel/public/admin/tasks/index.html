@@ -48,6 +48,23 @@
       <button id="add" class="btn-gradient tone-emerald" type="button"><span>Добавить задание</span></button>
     </div>
 
+    <div class="toolbar">
+      <select id="sort" aria-label="Сортировка">
+        <option value="newest">Сортировка: новые</option>
+        <option value="oldest">Сортировка: старые</option>
+        <option value="priority">Сортировка: приоритет</option>
+        <option value="updated">Сортировка: изменённые</option>
+      </select>
+      <select id="group" aria-label="Группировка">
+        <option value="none">Группы: нет</option>
+        <option value="assignee">Группы: исполнитель</option>
+        <option value="priority">Группы: приоритет</option>
+        <option value="status">Группы: статус</option>
+      </select>
+      <span class="spacer"></span>
+      <button id="toggle-all" type="button" hidden>Развернуть все</button>
+    </div>
+
     <div id="tasks-panel" role="tabpanel">
       <div class="task-list" id="list"></div>
       <div id="empty" class="empty" hidden>Заданий пока нет.</div>
