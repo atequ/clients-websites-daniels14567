@@ -1,5 +1,5 @@
 import { getSupabase } from "./supabase.js";
-import { mountBackground } from "./background.js";
+import { mountThemeToggle } from "./theme.js";
 import { createSmoothTab } from "./smooth-tab.js";
 
 const ASSIGNEE_LABELS = { owner: "Конор", partner: "Даниэль", agent: "ИИ-агент" };
@@ -7,13 +7,11 @@ const PRIORITY_LABELS = { high: "Высокий", normal: "Обычный", low:
 const STATUS_LABELS = { new: "Новое", in_progress: "В работе", done: "Выполнено" };
 const PRIORITY_RANK = { high: 0, normal: 1, low: 2 };
 
-// Gradient tones shared with the clients page: "in progress" and "finished"
-// use the same colours there, so a status reads the same everywhere.
 const STATUS_TABS = [
-  { id: "all", title: "Все", tone: "blue" },
-  { id: "new", title: "Новые", tone: "orange" },
-  { id: "in_progress", title: "В работе", tone: "purple" },
-  { id: "done", title: "Выполнены", tone: "emerald" },
+  { id: "all", title: "Все" },
+  { id: "new", title: "Новые" },
+  { id: "in_progress", title: "В работе" },
+  { id: "done", title: "Выполнены" },
 ];
 
 const byNewest = (a, b) => new Date(b.created_at) - new Date(a.created_at);
@@ -459,7 +457,7 @@ function bindSelect(select, key) {
 }
 
 async function init() {
-  mountBackground();
+  mountThemeToggle(document.getElementById("theme-toggle"));
 
   try {
     sb = await getSupabase();

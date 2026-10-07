@@ -4,11 +4,13 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
-  <meta name="color-scheme" content="dark">
+  <meta name="color-scheme" content="light dark">
   <title>Вход — Панель клиентов</title>
+  <script src="/assets/theme-init.js"></script>
   <link rel="stylesheet" href="/assets/styles.css">
 </head>
 <body class="login-page">
+  <div class="login-theme" id="theme-toggle"></div>
   <main class="login-wrap">
     <div class="card login-card">
       <h1>Панель клиентов</h1>
@@ -25,7 +27,7 @@
           <label for="password">Пароль</label>
           <input id="password" type="password" autocomplete="current-password" required>
         </div>
-        <button id="submit" class="btn-gradient tone-emerald block" type="submit"><span id="submit-label">Войти</span></button>
+        <button id="submit" class="btn-primary block" type="submit"><span id="submit-label">Войти</span></button>
       </form>
     </div>
   </main>

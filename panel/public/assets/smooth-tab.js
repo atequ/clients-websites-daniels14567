@@ -39,16 +39,12 @@ export function createSmoothTab(host, { items, selected, label, onChange }) {
   indicator.setAttribute("aria-hidden", "true");
   list.append(indicator);
 
-  // Without a tone the gradient label would have no colours and vanish.
-  const toneOf = (item) => item.tone ?? "blue";
-
   const buttons = new Map();
   for (const item of items) {
     const button = document.createElement("button");
     button.type = "button";
     button.id = `tab-${item.id}`;
     button.setAttribute("role", "tab");
-    button.classList.add(`tone-${toneOf(item)}`);
     if (item.controls) button.setAttribute("aria-controls", item.controls);
 
     const title = document.createElement("span");
@@ -67,13 +63,10 @@ export function createSmoothTab(host, { items, selected, label, onChange }) {
   host.replaceChildren(list);
 
   function place(animate) {
-    const { button, item } = buttons.get(current);
+    const { button } = buttons.get(current);
     if (!animate) indicator.style.transition = "none";
     indicator.style.width = `${button.offsetWidth}px`;
     indicator.style.transform = `translateX(${button.offsetLeft}px)`;
-    // The tone class drives the indicator's gradient; its colours are
-    // registered properties, so they fade as the indicator slides.
-    indicator.className = `smooth-tab-indicator tone-${toneOf(item)}`;
     if (!animate) {
       indicator.getBoundingClientRect();
       indicator.style.transition = "";
