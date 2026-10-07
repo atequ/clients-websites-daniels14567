@@ -1,19 +1,15 @@
 import { getSupabase } from "./supabase.js";
-import { mountBackground } from "./background.js";
+import { mountThemeToggle } from "./theme.js";
 import { createSmoothTab } from "./smooth-tab.js";
 
 const PAYMENT_LABELS = { paid: "Оплачено", partial: "Частично", unpaid: "Не оплачено" };
 const PROJECT_LABELS = { in_progress: "В работе", on_hold: "На паузе", done: "Сдан" };
 
-// One gradient tone per project status, shared by the tabs and the
-// shimmering status labels so both read as the same colour.
-const PROJECT_TONES = { in_progress: "purple", on_hold: "orange", done: "emerald" };
-
 const PROJECT_TABS = [
-  { id: "all", title: "Все", tone: "blue" },
-  { id: "in_progress", title: "В работе", tone: PROJECT_TONES.in_progress },
-  { id: "on_hold", title: "На паузе", tone: PROJECT_TONES.on_hold },
-  { id: "done", title: "Сданы", tone: PROJECT_TONES.done },
+  { id: "all", title: "Все" },
+  { id: "in_progress", title: "В работе" },
+  { id: "on_hold", title: "На паузе" },
+  { id: "done", title: "Сданы" },
 ];
 
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -222,7 +218,7 @@ function renderRows(list) {
 
       const project = document.createElement("td");
       const status = document.createElement("span");
-      status.className = `shimmer tone-${PROJECT_TONES[client.project_status]}`;
+      status.className = `status status-${client.project_status}`;
       status.textContent = PROJECT_LABELS[client.project_status];
       project.append(status);
 
@@ -257,16 +253,15 @@ function render() {
   renderRows(list);
 }
 
-// Slide the table in from the side of the newly picked tab, the way the
-// original component swaps its card content.
+// Ease the table in from the side of the newly picked tab.
 function slideIn(direction) {
   if (reducedMotion) return;
   el.panel.animate(
     [
-      { transform: `translateX(${direction * 32}px)`, opacity: 0, filter: "blur(6px)" },
-      { transform: "none", opacity: 1, filter: "blur(0)" },
+      { transform: `translateX(${direction * 16}px)`, opacity: 0 },
+      { transform: "none", opacity: 1 },
     ],
-    { duration: 400, easing: "cubic-bezier(0.32, 0.72, 0, 1)" },
+    { duration: 300, easing: "cubic-bezier(0.32, 0.72, 0, 1)" },
   );
 }
 
@@ -361,7 +356,7 @@ async function deleteClient(client) {
 }
 
 async function init() {
-  mountBackground();
+  mountThemeToggle(document.getElementById("theme-toggle"));
 
   tabs = createSmoothTab(document.getElementById("project-tabs"), {
     label: "Статус проекта",
