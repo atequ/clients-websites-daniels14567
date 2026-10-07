@@ -5,6 +5,7 @@ import { createSmoothTab } from "./smooth-tab.js";
 const ASSIGNEE_LABELS = { owner: "Конор", partner: "Даниэль", agent: "ИИ-агент" };
 const PRIORITY_LABELS = { high: "Высокий", normal: "Обычный", low: "Низкий" };
 const STATUS_LABELS = { new: "Новое", in_progress: "В работе", done: "Выполнено" };
+const PRIORITY_RANK = { high: 0, normal: 1, low: 2 };
 
 // Gradient tones shared with the clients page: "in progress" and "finished"
 // use the same colours there, so a status reads the same everywhere.
@@ -14,6 +15,22 @@ const STATUS_TABS = [
   { id: "in_progress", title: "В работе", tone: "purple" },
   { id: "done", title: "Выполнены", tone: "emerald" },
 ];
+
+const byNewest = (a, b) => new Date(b.created_at) - new Date(a.created_at);
+const SORTS = {
+  newest: byNewest,
+  oldest: (a, b) => byNewest(b, a),
+  priority: (a, b) => PRIORITY_RANK[a.priority] - PRIORITY_RANK[b.priority] || byNewest(a, b),
+  updated: (a, b) => new Date(b.updated_at) - new Date(a.updated_at),
+};
+
+// Groups appear in the order of their label map: Конор, Даниэль, agent;
+// high to low priority; new to done.
+const GROUPS = {
+  assignee: { field: "assignee", labels: ASSIGNEE_LABELS },
+  priority: { field: "priority", labels: PRIORITY_LABELS },
+  status: { field: "status", labels: STATUS_LABELS },
+};
 
 const fmtDate = (value) =>
   new Date(value).toLocaleDateString("ru-RU", { day: "numeric", month: "short" });
@@ -27,6 +44,9 @@ const el = {
   search: document.getElementById("search"),
   filterAssignee: document.getElementById("filter-assignee"),
   filterPriority: document.getElementById("filter-priority"),
+  sort: document.getElementById("sort"),
+  group: document.getElementById("group"),
+  toggleAll: document.getElementById("toggle-all"),
   dialog: document.getElementById("dialog"),
   dialogTitle: document.getElementById("dialog-title"),
   form: document.getElementById("task-form"),
@@ -34,30 +54,86 @@ const el = {
 };
 
 let sb;
+let tabs;
 let tasks = [];
+let shown = [];
 let editingId = null;
-let statusTab = "all";
+
+// The tab, filters, sort, grouping and which cards and groups are open are
+// remembered per browser, so the page comes back the way it was left.
+const VIEW_KEY = "panel.tasks.view";
+const view = {
+  tab: "all",
+  assignee: "",
+  priority: "",
+  sort: "newest",
+  group: "none",
+  open: new Set(),
+  closedGroups: new Set(),
+};
+
+function loadView() {
+  let saved;
+  try {
+    saved = JSON.parse(localStorage.getItem(VIEW_KEY));
+  } catch {
+    return;
+  }
+  if (!saved || typeof saved !== "object") return;
+
+  if (STATUS_TABS.some((tab) => tab.id === saved.tab)) view.tab = saved.tab;
+  if (Object.hasOwn(ASSIGNEE_LABELS, saved.assignee)) view.assignee = saved.assignee;
+  if (Object.hasOwn(PRIORITY_LABELS, saved.priority)) view.priority = saved.priority;
+  if (Object.hasOwn(SORTS, saved.sort)) view.sort = saved.sort;
+  if (Object.hasOwn(GROUPS, saved.group)) view.group = saved.group;
+  if (Array.isArray(saved.open)) view.open = new Set(saved.open);
+  if (Array.isArray(saved.closedGroups)) view.closedGroups = new Set(saved.closedGroups);
+}
+
+function saveView() {
+  try {
+    localStorage.setItem(
+      VIEW_KEY,
+      JSON.stringify({ ...view, open: [...view.open], closedGroups: [...view.closedGroups] }),
+    );
+  } catch {
+    // Storage can be blocked (e.g. private mode); the page still works, it just forgets.
+  }
+}
 
 function showError(text) {
   el.msg.textContent = text;
   el.msg.classList.add("show");
 }
 
-function visibleTasks() {
+// Search and the assignee/priority filters apply everywhere; the status tab
+// narrows further. Tab counts use the first set so each tab shows what it would list.
+function matchingTasks() {
   const query = el.search.value.trim().toLowerCase();
-  const assignee = el.filterAssignee.value;
-  const priority = el.filterPriority.value;
 
   return tasks.filter((task) => {
-    if (statusTab !== "all" && task.status !== statusTab) return false;
-    if (assignee && task.assignee !== assignee) return false;
-    if (priority && task.priority !== priority) return false;
+    if (view.assignee && task.assignee !== view.assignee) return false;
+    if (view.priority && task.priority !== view.priority) return false;
     if (query) {
       const haystack = `${task.title} ${task.description ?? ""}`.toLowerCase();
       if (!haystack.includes(query)) return false;
     }
     return true;
   });
+}
+
+// Finished tasks sink to the bottom so open work stays on top.
+function sortTasks(list) {
+  const compare = SORTS[view.sort];
+  return [...list].sort((a, b) => (a.status === "done") - (b.status === "done") || compare(a, b));
+}
+
+function updateTabCounts(list) {
+  const counts = { all: list.length };
+  for (const tab of STATUS_TABS.slice(1)) {
+    counts[tab.id] = list.filter((t) => t.status === tab.id).length;
+  }
+  tabs.setCounts(counts);
 }
 
 function renderSummary() {
@@ -88,15 +164,36 @@ function renderSummary() {
   );
 }
 
+function makeChevron() {
+  const chevron = document.createElement("span");
+  chevron.className = "chevron";
+  chevron.setAttribute("aria-hidden", "true");
+  return chevron;
+}
+
+// Collapsed, a card shows its title, a one-line preview and the meta line;
+// open, it shows the full description and the actions.
 function renderTask(task) {
+  const open = view.open.has(task.id);
   const article = document.createElement("article");
-  article.className = `task${task.status === "done" ? " is-done" : ""}`;
+  article.id = `task-${task.id}`;
+  article.className = "task";
+  article.classList.toggle("is-done", task.status === "done");
+  article.classList.toggle("is-open", open);
 
   const top = document.createElement("div");
   top.className = "task-top";
 
   const title = document.createElement("h3");
-  title.textContent = task.title;
+  const toggle = document.createElement("button");
+  toggle.type = "button";
+  toggle.className = "task-toggle";
+  toggle.setAttribute("aria-expanded", String(open));
+  toggle.setAttribute("aria-controls", article.id);
+  const titleText = document.createElement("span");
+  titleText.textContent = task.title;
+  toggle.append(makeChevron(), titleText);
+  title.append(toggle);
 
   const priority = document.createElement("span");
   priority.className = `tag priority-${task.priority}`;
@@ -150,19 +247,119 @@ function renderTask(task) {
   remove.addEventListener("click", () => deleteTask(task));
 
   actions.append(statusSelect, edit, remove);
+  actions.hidden = !open;
   article.append(actions);
+
+  toggle.addEventListener("click", () => {
+    const next = !view.open.has(task.id);
+    if (next) view.open.add(task.id);
+    else view.open.delete(task.id);
+    article.classList.toggle("is-open", next);
+    toggle.setAttribute("aria-expanded", String(next));
+    actions.hidden = !next;
+    saveView();
+    updateToggleAll();
+  });
 
   return article;
 }
 
+const groupKey = (value) => `${view.group}:${value}`;
+
+function renderGroup(value, label, items) {
+  const key = groupKey(value);
+  const closed = view.closedGroups.has(key);
+
+  const section = document.createElement("section");
+  section.className = "task-group";
+
+  const head = document.createElement("h2");
+  head.className = "task-group-head";
+  const toggle = document.createElement("button");
+  toggle.type = "button";
+  toggle.className = "task-group-toggle";
+  toggle.setAttribute("aria-expanded", String(!closed));
+  const name = document.createElement("span");
+  name.textContent = label;
+  const count = document.createElement("span");
+  count.className = "group-count";
+  count.textContent = String(items.length);
+  toggle.append(makeChevron(), name, count);
+  head.append(toggle);
+
+  const body = document.createElement("div");
+  body.className = "task-list";
+  body.id = `group-${view.group}-${value}`;
+  body.hidden = closed;
+  body.append(...items.map(renderTask));
+  toggle.setAttribute("aria-controls", body.id);
+
+  toggle.addEventListener("click", () => {
+    const nowClosed = !view.closedGroups.has(key);
+    if (nowClosed) view.closedGroups.add(key);
+    else view.closedGroups.delete(key);
+    body.hidden = nowClosed;
+    toggle.setAttribute("aria-expanded", String(!nowClosed));
+    saveView();
+    updateToggleAll();
+  });
+
+  section.append(head, body);
+  return section;
+}
+
+function renderGroups(list) {
+  const { field, labels } = GROUPS[view.group];
+  return Object.entries(labels)
+    .map(([value, label]) => [value, label, list.filter((t) => t[field] === value)])
+    .filter(([, , items]) => items.length > 0)
+    .map(([value, label, items]) => renderGroup(value, label, items));
+}
+
+function closedGroupsInView() {
+  return [...view.closedGroups].filter((key) => key.startsWith(`${view.group}:`));
+}
+
+// "Expand all" opens every listed card and any collapsed group;
+// "Collapse all" closes the cards and leaves the groups as they are.
+function updateToggleAll() {
+  el.toggleAll.hidden = shown.length === 0;
+  const allOpen =
+    shown.every((task) => view.open.has(task.id)) &&
+    (view.group === "none" || closedGroupsInView().length === 0);
+  el.toggleAll.dataset.action = allOpen ? "collapse" : "expand";
+  el.toggleAll.textContent = allOpen ? "Свернуть все" : "Развернуть все";
+}
+
+function toggleAll() {
+  const expand = el.toggleAll.dataset.action === "expand";
+  for (const task of shown) {
+    if (expand) view.open.add(task.id);
+    else view.open.delete(task.id);
+  }
+  if (expand && view.group !== "none") {
+    for (const key of closedGroupsInView()) view.closedGroups.delete(key);
+  }
+  saveView();
+  render();
+}
+
 function render() {
   renderSummary();
-  const list = visibleTasks();
-  el.empty.hidden = list.length > 0;
+  const matching = matchingTasks();
+  updateTabCounts(matching);
+  shown = sortTasks(
+    view.tab === "all" ? matching : matching.filter((t) => t.status === view.tab),
+  );
+
+  el.empty.hidden = shown.length > 0;
   el.empty.textContent = tasks.length
     ? "Ничего не найдено по текущим фильтрам."
     : "Заданий пока нет.";
-  el.list.replaceChildren(...list.map(renderTask));
+  el.list.replaceChildren(
+    ...(view.group === "none" ? shown.map(renderTask) : renderGroups(shown)),
+  );
+  updateToggleAll();
 }
 
 async function loadTasks() {
@@ -176,6 +373,14 @@ async function loadTasks() {
     return;
   }
   tasks = data;
+
+  // Forget open cards whose tasks are gone, so the saved list doesn't grow forever.
+  const ids = new Set(tasks.map((t) => t.id));
+  for (const id of view.open) {
+    if (!ids.has(id)) view.open.delete(id);
+  }
+  saveView();
+
   render();
 }
 
@@ -243,6 +448,16 @@ async function deleteTask(task) {
   await loadTasks();
 }
 
+// Shows the remembered value and keeps the view in sync when it changes.
+function bindSelect(select, key) {
+  select.value = view[key];
+  select.addEventListener("change", () => {
+    view[key] = select.value;
+    saveView();
+    render();
+  });
+}
+
 async function init() {
   mountBackground();
 
@@ -260,12 +475,14 @@ async function init() {
   }
   el.who.textContent = data.session.user.email;
 
-  createSmoothTab(document.getElementById("status-tabs"), {
+  loadView();
+  tabs = createSmoothTab(document.getElementById("status-tabs"), {
     label: "Статус задания",
     items: STATUS_TABS.map((tab) => ({ ...tab, controls: "tasks-panel" })),
-    selected: "all",
+    selected: view.tab,
     onChange: (id) => {
-      statusTab = id;
+      view.tab = id;
+      saveView();
       render();
     },
   });
@@ -278,8 +495,11 @@ async function init() {
   document.getElementById("cancel").addEventListener("click", () => el.dialog.close());
   el.form.addEventListener("submit", saveTask);
   el.search.addEventListener("input", render);
-  el.filterAssignee.addEventListener("change", render);
-  el.filterPriority.addEventListener("change", render);
+  el.toggleAll.addEventListener("click", toggleAll);
+  bindSelect(el.filterAssignee, "assignee");
+  bindSelect(el.filterPriority, "priority");
+  bindSelect(el.sort, "sort");
+  bindSelect(el.group, "group");
 
   await loadTasks();
 }
