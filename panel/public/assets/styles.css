@@ -99,6 +99,25 @@ a:hover {
   white-space: nowrap;
 }
 
+/* ─── Beams background ────────────────────────────────────────────────── */
+/* Drawn by background.js behind everything; the canvas is low-resolution and
+   the blur here turns its stripes into soft light. */
+
+.beams {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.beams canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  filter: blur(40px);
+}
+
 /* ─── Surfaces ────────────────────────────────────────────────────────── */
 
 .card,

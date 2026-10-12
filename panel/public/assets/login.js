@@ -1,6 +1,8 @@
 import { getSupabase } from "./supabase.js";
 import { mountThemeToggle } from "./theme.js";
+import { mountBackground } from "./background.js";
 
+mountBackground();
 mountThemeToggle(document.getElementById("theme-toggle"));
 
 const form = document.getElementById("login-form");
