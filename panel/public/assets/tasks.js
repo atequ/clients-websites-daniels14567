@@ -1,5 +1,6 @@
 import { getSupabase } from "./supabase.js";
 import { mountThemeToggle } from "./theme.js";
+import { mountBackground } from "./background.js";
 import { createSmoothTab } from "./smooth-tab.js";
 
 const ASSIGNEE_LABELS = { owner: "Конор", partner: "Даниэль", agent: "ИИ-агент" };
@@ -457,6 +458,7 @@ function bindSelect(select, key) {
 }
 
 async function init() {
+  mountBackground();
   mountThemeToggle(document.getElementById("theme-toggle"));
 
   try {

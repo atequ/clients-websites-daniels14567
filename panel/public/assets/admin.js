@@ -1,5 +1,6 @@
 import { getSupabase } from "./supabase.js";
 import { mountThemeToggle } from "./theme.js";
+import { mountBackground } from "./background.js";
 import { createSmoothTab } from "./smooth-tab.js";
 
 const PAYMENT_LABELS = { paid: "Оплачено", partial: "Частично", unpaid: "Не оплачено" };
@@ -356,6 +357,7 @@ async function deleteClient(client) {
 }
 
 async function init() {
+  mountBackground();
   mountThemeToggle(document.getElementById("theme-toggle"));
 
   tabs = createSmoothTab(document.getElementById("project-tabs"), {
